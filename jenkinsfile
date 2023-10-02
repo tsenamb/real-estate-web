@@ -1,0 +1,30 @@
+node('ubuntu-appserver')
+{
+    def app
+    stage('Cloning git')
+    {
+        /* Make sure repository clone to our workspace */
+        checkout scm
+    }
+
+
+    stage('Build-and-Tag')
+    {
+        /* this builsd image;
+        docker build on command line*/
+
+        app =docker.build("tsenamb/game_docker_repo")
+    }
+
+    stage('Push-to-dockerhub')
+    {
+        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_credentials')
+        app.push("latest")
+    }
+
+    stage('Pull image')
+    {
+        sh "docker-compose down"
+        sh "docker-compose up -d"
+    }
+}  
